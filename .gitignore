@@ -1,2 +1,4 @@
-*.ipynb
+# *.ipynb
 data
+.ipynb_checkpoints
+save_model/
