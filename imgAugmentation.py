@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[12]:
+# In[ ]:
 
 
 """Data Aumentation
@@ -25,6 +25,8 @@ from multiprocessing import Pool
 # logger = logging.getLogger(__name__)
 # ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+U_NORM_PARAM = 0.435912
+V_NORM_PARAM = 0.614777
 
 class ImageProcess:
     """
@@ -52,6 +54,63 @@ class ImageProcess:
             os.mkdir(dst_path)
             print("make new", dst_path, "path!")   
         return True
+    
+    @staticmethod
+    def rgb_to_yuv(image):
+        """
+        convert image in RGB format to YUV
+        :param image PIL class image
+        :return: image after conversion
+        """
+        rgb_img = np.array(image)
+        _r = rgb_img[:, :, 0]
+        _g = rgb_img[:, :, 1]
+        _b = rgb_img[:, :, 2]
+
+        _y = 0.299 * _r + 0.587 * _g + 0.114 * _b
+        _u = 0.492 * (_b - _y)
+        _v = 0.877 * (_r - _y)
+
+        _u = _u / (U_NORM_PARAM * 2) + 0.5
+        _v = _v / (V_NORM_PARAM * 2) + 0.5
+
+        # given an interval, values outside the interval are clipped to the interval edges.
+        _y = np.clip(_y, 0, 1)
+        _u = np.clip(_u, 0, 1)
+        _v = np.clip(_v, 0, 1)
+        
+        yuv_img = [_y, _u, _v]
+        print(np.array(yuv_img).shape)
+        return yuv_img
+
+    def yuv_to_rgb(image):
+        """
+        convert image in YUV format to RGB
+        :param image PIL class image
+        :return: image after conversion
+        """
+
+        yuv_img = np.array(image)
+
+        _y = yuv_img[:, :, 0]
+        _u = yuv_img[:, :, 1]
+        _v = yuv_img[:, :, 2]
+
+        _u = (_u - 0.5) * U_NORM_PARAM * 2
+        _v = (_v - 0.5) * V_NORM_PARAM * 2
+
+        _r = _y + 1.14 * _v
+        _g = _y - 0.395 * _u - 0.581 * _v
+        _b = _y + 2.033 * _u
+
+        # given an interval, values outside the interval are clipped to the interval edges.
+        _r = np.clip(_r, 0, 1)
+        _g = np.clip(_g, 0, 1)
+        _b = np.clip(_b, 0, 1)
+        
+        rgb_img = [_r, _g, _b]
+        
+        return rgb_img
         
     @staticmethod
     def imageResize(image, width=200, height=280, mode=Image.BICUBIC):
@@ -239,15 +298,15 @@ class ImageProcess:
             ImageProcess.imgProcess(file, src_path, dst_path, times)
 
 
-# In[13]:
+# In[ ]:
 
 
 if __name__ == '__main__':
     
     src_path = "./data/poster_negative/"
-    dst_path = "./data/tmp/"
+    dst_path = "./data/poster_negative_aug/"
     
-    ImageProcess.multiProcess("./data/poster_positive/", "./data/tmp/", 5)
+    ImageProcess.multiProcess(src_path, dst_path, 5)
 #     multiThread(r"./data/poster_positive/", r"./data/tmp/")
 #     singleThread(r"./data/poster_negative/", r"./data/tmp2/")
     
