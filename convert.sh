@@ -1,1 +1,1 @@
-jupyter nbconvert --to script *.ipynb 
+jupyter nbconvert --to script imgAugmentation.ipynb 
