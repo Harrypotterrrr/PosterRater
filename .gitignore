@@ -1,5 +1,5 @@
 # *.ipynb
 data
 .ipynb_checkpoints
-save_model/
+model_save/
 __pycache__
